@@ -7,20 +7,20 @@ using System.Threading.Tasks;
 
 class Program
 {
-    private const string LinkDeDescarga = "Insertar Link";
-    private static readonly string DescargarMods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "Mods.zip");
-    private static readonly string ExtraerMods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+    private const string LinkDeDescarga = "";
+    private static readonly string DescargarMods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData","Roaming", ".minecraft", "Mods", "Mods.zip");
+    private static readonly string ExtraerMods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming", ".minecraft", "Mods");
 
     static async Task Main(string[] args)
     {
 
         while (true)
         {
-            Console.WriteLine("Selecciona una de estas 3 madres");
+            Console.WriteLine("Selecciona una de estas 4 opciones");
             Console.WriteLine("1. instalar Mods");
             Console.WriteLine("2. Actualizar Mods");
             Console.WriteLine("3. Eliminar Mods");
-            Console.WriteLine("Salir XD");
+            Console.WriteLine("4. Salir XD");
 
             var input = Console.ReadLine();
 
@@ -77,18 +77,28 @@ class Program
 
     private static async Task ActualizarYExtraer()
     {
-
         Console.WriteLine("Preparando Acrualización");
-        DeleteFiles();
+        EliminarArchivos();
 
         Console.WriteLine("Descargando Actualización...");
-        
         await DescargarYExtraer();
     }
 
-    private static async Task EliminarArchivos()
+    private static void EliminarArchivos()
     {
+        if (Directory.Exists(ExtraerMods))
+        {
+            foreach (var file in Directory.GetFiles(ExtraerMods))
+            { 
+                File.Delete(file);
+            }
 
+            foreach (var dir in Directory.GetDirectories(ExtraerMods))
+            {
+                Directory.Delete(dir, true);
+            }
+            Console.WriteLine("Los mods fueron borrados");
+        }
 
     }
 }
