@@ -1,1 +1,1 @@
-# Instalador de mods para Minecraft java
+# Instalador de mods para Minecraft
