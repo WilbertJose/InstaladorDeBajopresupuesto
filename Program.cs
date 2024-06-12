@@ -30,10 +30,10 @@ class Program
                     await DownloadAndExtract();
                     break;
                 case "2":
-                    await UpdateAndExtract();
+                    await ActualizarYExtraer();
                     break;
                 case "3":
-                    DeleteFiles();
+                    EliminarArchivos();
                     break;
                 case "4":
                     return;
@@ -41,5 +41,22 @@ class Program
                     break;
             }
         }
+    }
+    private static async Task DownloadAndExtract()
+    {
+
+
+    }
+
+    private static async Task ActualizarYExtraer()
+    {
+
+
+    }
+
+    private static async Task EliminarArchivos()
+    {
+
+
     }
 }
