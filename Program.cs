@@ -5,100 +5,141 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-class Program
+namespace InstaladorDeBajopresupuesto
 {
-    private const string LinkDeDescarga = "";
-    private static readonly string DescargarMods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData","Roaming", ".minecraft", "Mods", "Mods.zip");
-    private static readonly string ExtraerMods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming", ".minecraft", "Mods");
-
-    static async Task Main(string[] args)
+    class Program
     {
+        private static readonly string LinkDeDescarga = "https://bridge-mc.netlify.app/mc/mods2.2.zip";
+        private static readonly string DescargarMods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming", ".minecraft", "mods");
+        private static readonly string ExtraerMods = DescargarMods;
 
-        while (true)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Selecciona una de estas 4 opciones");
-            Console.WriteLine("1. instalar Mods");
-            Console.WriteLine("2. Actualizar Mods");
-            Console.WriteLine("3. Eliminar Mods");
-            Console.WriteLine("4. Salir XD");
 
-            var input = Console.ReadLine();
+            bool Continuar = true;
 
-            switch (input)
+            while (Continuar)
             {
-                case "1":
-                    await DescargarYExtraer();
-                    break;
-                case "2":
-                    await ActualizarYExtraer();
-                    break;
-                case "3":
-                    EliminarArchivos();
-                    break;
-                case "4":
-                    return;
-                default: Console.WriteLine("No quieres unos nachos tambien?, en la pantalla pone claramente 4 opciones disponibles no sea wey.");
-                    break;
+                Console.WriteLine("Selecciona una de estas 4 opciones");
+                Console.WriteLine("1. instalar Mods");
+                Console.WriteLine("2. Actualizar Mods");
+                Console.WriteLine("3. Eliminar Mods");
+                Console.WriteLine("4. Salir XD");
+
+                var input = Console.ReadLine();
+
+                switch (input)
+                {
+                    case "1":
+                        await Descargar();
+                        break;
+                    case "2":
+                        await Actualizar();
+                        break;
+                    case "3":
+                        EliminarMods();
+                        break;
+                    case "4":
+                        Continuar = false;
+                        Console.WriteLine("XD");
+                        break;
+                    default: Console.WriteLine("No quieres unos nachos tambien?, en la pantalla pone claramente 4 opciones disponibles no sea wey.");
+                        break;
+                }
+
+                if (Continuar) ;
+
+                Console.WriteLine("Preciona cualquir tecla para regresar al menú");
+                Console.ReadKey();
             }
         }
-    }
-    private static async Task DescargarYExtraer()
-    {
-        try
+        private static async Task Descargar()
         {
-            Console.WriteLine("Descargando...");
-            using (var client = new HttpClient())
+            string rutadearchzip = Path.Combine(DescargarMods, "mods.zip");
+            bool exio = await DescargarArchivo(rutadearchzip);
+            if (exio)
             {
-                var response = await client.GetAsync(LinkDeDescarga);
-                response.EnsureSuccessStatusCode();
+                ExtraerArchivos(rutadearchzip, ExtraerMods);
+                File.Delete(rutadearchzip);
+                Console.WriteLine("Mods Instalados");
+            }
 
-                await using (var fs = new FileStream(DescargarMods, FileMode.Create, FileAccess.Write, FileShare.None))
+        }
+
+        private static async Task Actualizar()
+        {
+            EliminarMods();
+            await Descargar();
+
+        }
+        private static void EliminarMods()
+        {
+            if (Directory.Exists(DescargarMods))
+            {
+                DirectoryInfo di = new DirectoryInfo(DescargarMods);
+                foreach (FileInfo file in di.GetFiles())
                 {
-                    await response.Content.CopyToAsync(fs);
+                    file.Delete();
+                }
+                foreach (DirectoryInfo dir in di.GetDirectories())
+                {
+                    dir.Delete(true);
+                }
+                Console.WriteLine("Mods eliminados corrctamente");
+            }
+
+            else
+            {
+                Console.WriteLine("La carpeta no existe");
+            }
+        }
+    
+        private static async Task<bool> DescargarArchivo(string rutadeachivo)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.Timeout = TimeSpan.FromMinutes(5);
+                int maxIntentos = 3;
+                for (int i = 0; i < maxIntentos; i++)
+                {
+                    try
+                    {
+                        Console.WriteLine("Descargando Mods...");
+                        HttpResponseMessage response = await client.GetAsync(LinkDeDescarga);
+                        response.EnsureSuccessStatusCode();
+                        using (FileStream fs = new FileStream(rutadeachivo, FileMode.Create))
+                        {
+                            await response.Content.CopyToAsync(fs);
+                        }
+
+                        Console.WriteLine("Descarga completa");
+                        return true;
+                    }
+
+                    catch (HttpRequestException e)
+                    {
+                        Console.WriteLine($"Error al descargar mods: {e.Message}");
+                        if (i == maxIntentos - 1)
+                        {
+                            Console.WriteLine("No se puede completar la descarga despues de varios intentos, podria deberse a tu internet XD");
+                            return false;
+                        }
+
+                        else
+                        {
+                            Console.WriteLine("Reintentando...");
+                        }
+                    }
                 }
             }
 
-            Console.WriteLine("Instalando mods...");
-            ZipFile.ExtractToDirectory(DescargarMods, ExtraerMods, true);
-            Console.WriteLine("Desacarga E Instalación Completadas.");
+            return false;
         }
 
-        catch (HttpRequestException e)
+        private static void ExtraerArchivos(string Zipchafa, string Modsxd)
         {
-            Console.WriteLine($"Error de descarga: {e.Message}");
+            ZipFile.ExtractToDirectory(Zipchafa, Modsxd);
+
         }
-
-        catch (InvalidDataException e)
-        {
-            Console.WriteLine($"Error de instalación: {e.Message}");
-        }
-
-    }
-
-    private static async Task ActualizarYExtraer()
-    {
-        Console.WriteLine("Preparando Acrualización");
-        EliminarArchivos();
-
-        Console.WriteLine("Descargando Actualización...");
-        await DescargarYExtraer();
-    }
-
-    private static void EliminarArchivos()
-    {
-        if (Directory.Exists(ExtraerMods))
-        {
-            foreach (var file in Directory.GetFiles(ExtraerMods))
-            { 
-                File.Delete(file);
-            }
-
-            foreach (var dir in Directory.GetDirectories(ExtraerMods))
-            {
-                Directory.Delete(dir, true);
-            }
-            Console.WriteLine("Los mods fueron borrados");
-        }
-
     }
 }
