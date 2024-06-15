@@ -9,7 +9,7 @@ namespace InstaladorDeBajopresupuesto
 {
     class Program
     {
-        private static readonly string LinkDeDescarga = "https://bridge-mc.netlify.app/mc/mods2.2.zip";
+        private static readonly string LinkDeDescarga = "https://vpxcoqufjvzbalnplopi.supabase.co/storage/v1/object/public/MODS/mods2.2.zip?t=2024-06-14T01%3A41%3A35.112Z";
         private static readonly string DescargarMods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming", ".minecraft", "mods");
         private static readonly string ExtraerMods = DescargarMods;
 
@@ -61,7 +61,7 @@ namespace InstaladorDeBajopresupuesto
             {
                 ExtraerArchivos(rutadearchzip, ExtraerMods);
                 File.Delete(rutadearchzip);
-                Console.WriteLine("Mods Instalados");
+                Console.WriteLine(" Mods Instalados");
             }
 
         }
@@ -96,6 +96,31 @@ namespace InstaladorDeBajopresupuesto
     
         private static async Task<bool> DescargarArchivo(string rutadeachivo)
         {
+            using (WebClient client2 = new WebClient()) 
+            {
+                client2.DownloadProgressChanged += (s, e) =>
+                {
+                    Console.Write($"\rDescargando mods... {e.ProgressPercentage}%");
+                };
+
+                client2.DownloadFileCompleted += (s, e) =>
+                {
+                    Console.Write("Descarga Completa");
+                };
+
+                try
+                {
+
+                    await client2.DownloadFileTaskAsync(new Uri(LinkDeDescarga), rutadeachivo);
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error al descargar mods: {e.Message}");
+                    return false;
+                }
+            }
+
             using (HttpClient client = new HttpClient())
             {
                 client.Timeout = TimeSpan.FromMinutes(5);
